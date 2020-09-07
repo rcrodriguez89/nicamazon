@@ -34,6 +34,12 @@ public class ProductController {
         return new ResponseEntity<>(result.get(), HttpStatus.OK);
     }
 
+    @GetMapping(value = "/api/Product/GetProductsByCategory")
+    public ResponseEntity<Page<ProductDto>> getProductsByCategory(Pageable pageable, @RequestParam("idcategory") Long idCategory) {
+        Page<ProductDto> result = productDao.searchByCategoryId(pageable, idCategory).map(new ProductToProductDto());
+        return new ResponseEntity<>(result, HttpStatus.OK);
+    }
+
     @PostMapping(value = "/api/Product")
     public ResponseEntity<?> newProduct(@RequestBody Product product) {
         product.setId(null);
@@ -76,7 +82,7 @@ public class ProductController {
         if (!Product.isPresent()) {
             throw new ResourceNotFoundException("Product #" + id + " not found.");
         }
-        
+
         return Product.get();
     }
 
