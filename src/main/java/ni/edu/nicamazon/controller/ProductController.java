@@ -3,6 +3,7 @@ package ni.edu.nicamazon.controller;
 import ni.edu.nicamazon.dao.ProductDao;
 import ni.edu.nicamazon.dto.ProductDto;
 import ni.edu.nicamazon.entities.Product;
+import ni.edu.nicamazon.infrastructure.error.ResourceNotFoundException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
@@ -48,6 +49,35 @@ public class ProductController {
         responseHeaders.setLocation(newUri);
 
         return new ResponseEntity<>(null, responseHeaders, HttpStatus.CREATED);
+    }
+
+    @PutMapping(value = "/api/Product/{id}")
+    public ResponseEntity<?> updateProduct(@RequestBody Product product, @PathVariable Long id) {
+        verifyProduct(id);
+        product.setId(id);
+
+        // Save the entity
+        product = productDao.save(product);
+
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    @DeleteMapping(value = "/api/Product/{id}")
+    public ResponseEntity<?> deleteProduct(@PathVariable Long id) {
+        verifyProduct(id);
+        productDao.deleteById(id);
+
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    private Product verifyProduct(Long id) throws ResourceNotFoundException {
+        Optional<Product> Product = productDao.findById(id);
+
+        if (!Product.isPresent()) {
+            throw new ResourceNotFoundException("Product #" + id + " not found.");
+        }
+        
+        return Product.get();
     }
 
     private class ProductToProductDto implements Function<Product, ProductDto> {
