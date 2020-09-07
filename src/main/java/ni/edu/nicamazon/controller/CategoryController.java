@@ -32,7 +32,24 @@ public class CategoryController {
         Optional<CategoryDto> result = categoryDao.findById(id).map(new CategoryToCategoryDto());
         return new ResponseEntity<>(result.get(), HttpStatus.OK);
     }
-    
+
+    @PostMapping(value = "/api/Category")
+    public ResponseEntity<?> newCategory(@RequestBody Category category) {
+        category.setId(null);
+        category = categoryDao.save(category);
+
+        // Set the location header for the newly created resource
+        HttpHeaders responseHeaders = new HttpHeaders();
+        URI newUri = ServletUriComponentsBuilder
+                .fromCurrentRequest()
+                .path("/{id}")
+                .buildAndExpand(category.getId())
+                .toUri();
+        responseHeaders.setLocation(newUri);
+
+        return new ResponseEntity<>(null, responseHeaders, HttpStatus.CREATED);
+    }
+
     private class CategoryToCategoryDto implements Function<Category, CategoryDto> {
 
         @Override
