@@ -9,5 +9,4 @@ public class NicamazonApplication {
 	public static void main(String[] args) {
 		SpringApplication.run(NicamazonApplication.class, args);
 	}
-
 }
