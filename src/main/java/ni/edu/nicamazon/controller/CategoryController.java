@@ -3,6 +3,7 @@ package ni.edu.nicamazon.controller;
 import ni.edu.nicamazon.dao.CategoryDao;
 import ni.edu.nicamazon.dto.CategoryDto;
 import ni.edu.nicamazon.entities.Category;
+import ni.edu.nicamazon.infrastructure.error.ResourceNotFoundException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
@@ -48,6 +49,36 @@ public class CategoryController {
         responseHeaders.setLocation(newUri);
 
         return new ResponseEntity<>(null, responseHeaders, HttpStatus.CREATED);
+    }
+
+    @PutMapping(value = "/api/Category/{id}")
+    public ResponseEntity<?> updateCategory(@RequestBody Category category, @PathVariable Long id) {
+        verifyCategory(id);
+
+        category.setId(id);
+
+        // Save the entity
+        category = categoryDao.save(category);
+
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    @DeleteMapping(value = "/api/Category/{id}")
+    public ResponseEntity<?> deleteCategory(@PathVariable Long id) {
+        verifyCategory(id);
+
+        categoryDao.deleteById(id);
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    private Category verifyCategory(Long id) throws ResourceNotFoundException {
+        Optional<Category> category = categoryDao.findById(id);
+
+        if (!category.isPresent()) {
+            throw new ResourceNotFoundException("Category #" + id + " not found.");
+        }
+
+        return category.get();
     }
 
     private class CategoryToCategoryDto implements Function<Category, CategoryDto> {
